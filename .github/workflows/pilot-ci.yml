@@ -16,10 +16,34 @@ permissions:
   contents: write
 
 jobs:
+  detect-mode:
+    runs-on: ubuntu-latest
+    outputs:
+      should_bless: ${{ steps.check.outputs.should_bless }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2  # need parent commit for diff
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.mode }}" = "bless_and_benchmark" ]; then
+              echo "should_bless=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "should_bless=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            # Push event — bless if .lihaaf-bless-trigger modified in this push
+            if git diff --name-only HEAD~1 HEAD | grep -qE '^\.lihaaf-bless-trigger$'; then
+              echo "should_bless=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "should_bless=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
   bless:
-    if: |
-      github.event_name == 'workflow_dispatch' &&
-      inputs.mode == 'bless_and_benchmark'
+    needs: [detect-mode]
+    if: needs.detect-mode.outputs.should_bless == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: checkout lihaaf-converted
