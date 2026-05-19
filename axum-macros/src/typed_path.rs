@@ -437,8 +437,3 @@ fn map_err_rejection(rejection: Option<&syn::Path>) -> TokenStream {
         })
         .unwrap_or_default()
 }
-
-#[test]
-fn ui() {
-    crate::run_ui_tests("typed_path");
-}

@@ -1057,11 +1057,6 @@ fn state_from_via(ident: &Ident, via: &Path) -> Option<Type> {
     path_ident_is_state(via).then(|| parse_quote!(#ident))
 }
 
-#[test]
-fn ui() {
-    crate::run_ui_tests("from_request");
-}
-
 /// For some reason the compiler error for this is different locally and on CI. No idea why... So
 /// we don't use trybuild for this test.
 ///

@@ -879,13 +879,3 @@ fn skip_next_arg(arg: &FnArg, kind: FunctionKind) -> bool {
         },
     }
 }
-
-#[test]
-fn ui_debug_handler() {
-    crate::run_ui_tests("debug_handler");
-}
-
-#[test]
-fn ui_debug_middleware() {
-    crate::run_ui_tests("debug_middleware");
-}

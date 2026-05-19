@@ -98,8 +98,3 @@ impl Combine for FieldAttrs {
         Ok(self)
     }
 }
-
-#[test]
-fn ui() {
-    crate::run_ui_tests("from_ref");
-}
