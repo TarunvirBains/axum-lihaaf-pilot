@@ -1,0 +1,36 @@
+name: bless lihaaf snapshots
+on: workflow_dispatch
+
+permissions:
+  contents: write
+
+jobs:
+  bless:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout lihaaf-converted
+        uses: actions/checkout@v6
+        with:
+          ref: lihaaf-converted
+          persist-credentials: true
+
+      - name: install nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: install lihaaf
+        run: cargo install lihaaf --version 0.1.0-beta.9 --locked
+
+      - name: bless lihaaf snapshots
+        run: cargo lihaaf --bless --package axum-macros
+
+      - name: commit regenerated snapshots if any
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "no snapshot changes to commit"
+          else
+            git commit -m "chore: re-bless lihaaf snapshots against lihaaf 0.1.0-beta.9 output"
+            git push origin lihaaf-converted
+          fi
