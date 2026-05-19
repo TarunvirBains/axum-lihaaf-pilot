@@ -1,5 +1,5 @@
 error: missing `#[from_request(via(...))]`
- --> tests/from_request/fail/enum_no_via.rs:3:10
+ --> $DIR/enum_no_via.rs:3:10
   |
 3 | #[derive(FromRequest, Clone)]
   |          ^^^^^^^^^^^

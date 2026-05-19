@@ -1,5 +1,5 @@
 error[E0277]: the trait bound `String: FromRequestParts<_>` is not satisfied
- --> tests/from_request/fail/parts_extracting_body.rs:5:11
+ --> $DIR/parts_extracting_body.rs:5:11
   |
 5 |     body: String,
   |           ^^^^^^ the trait `FromRequestParts<_>` is not implemented for `String`

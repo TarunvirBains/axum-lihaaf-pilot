@@ -1,5 +1,5 @@
 error[E0027]: pattern does not mention field `id`
- --> tests/typed_path/fail/missing_capture.rs:5:14
+ --> $DIR/missing_capture.rs:5:14
   |
 5 | #[typed_path("/users")]
   |              ^^^^^^^^ missing field `id`

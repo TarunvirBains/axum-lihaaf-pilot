@@ -1,0 +1,68 @@
+name: benchmark (trybuild vs lihaaf)
+on:
+  workflow_dispatch:
+  push:
+    branches: [lihaaf-converted]
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [master, lihaaf-converted]
+    steps:
+      - name: checkout ${{ matrix.branch }}
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ matrix.branch }}
+
+      - name: install nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: install lihaaf (lihaaf-converted only)
+        if: matrix.branch == 'lihaaf-converted'
+        run: cargo install lihaaf --version 0.1.0-beta.9 --locked
+
+      - name: time fixture suite
+        id: bench
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.branch }}" = "master" ]; then
+            # master: run the embedded #[rustversion::nightly] #[test] fn ui()
+            # functions in axum-macros/src/{debug_handler,from_ref,from_request,
+            # typed_path}.rs that call trybuild via run_ui_tests().
+            CMD="cargo test --package axum-macros"
+          else
+            # lihaaf-converted: workspace-member entry via --package (beta.9 #53)
+            CMD="cargo lihaaf --package axum-macros"
+          fi
+          START=$(date +%s%N)
+          /usr/bin/time -o time.txt -v $CMD
+          END=$(date +%s%N)
+          WALL_MS=$(( (END - START) / 1000000 ))
+          PEAK_KB=$(awk '/Maximum resident set size/ {print $NF}' time.txt)
+          echo "wall_ms=$WALL_MS" >> "$GITHUB_OUTPUT"
+          echo "peak_kb=$PEAK_KB" >> "$GITHUB_OUTPUT"
+          printf '{"branch":"%s","wall_ms":%d,"peak_kb":%d}\n' \
+            "${{ matrix.branch }}" "$WALL_MS" "$PEAK_KB" > timing.json
+
+      - name: upload /usr/bin/time output (debug)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: time-debug-${{ matrix.branch }}
+          path: time.txt
+          if-no-files-found: ignore
+
+      - name: upload timing JSON
+        uses: actions/upload-artifact@v6
+        with:
+          name: timing-${{ matrix.branch }}
+          path: timing.json
+
+      - name: write step summary
+        run: |
+          echo "## ${{ matrix.branch }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "wall_ms: ${{ steps.bench.outputs.wall_ms }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "peak_kb: ${{ steps.bench.outputs.peak_kb }}" >> "$GITHUB_STEP_SUMMARY"

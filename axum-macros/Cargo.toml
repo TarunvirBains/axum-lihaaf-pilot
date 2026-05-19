@@ -34,12 +34,67 @@ syn = { version = "2.0", features = [
 [dev-dependencies]
 axum = { path = "../axum", features = ["macros"] }
 axum-extra = { path = "../axum-extra", features = ["typed-routing", "cookie-private", "typed-header", "routing"] }
-rustversion = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 syn = { version = "2.0", features = ["full", "extra-traits"] }
 tokio = { version = "1.25.0", features = ["full"] }
-trybuild = "1.0.63"
 
 [lints]
 workspace = true
+
+# Lihaaf is the sole compile-fixture gate for axum-macros.
+#
+# CI installs lihaaf via `cargo install lihaaf --version 0.1.0-beta.9 --locked`
+# and runs `cargo lihaaf --package axum-macros` (workspace-member entry, #53).
+# The 45 compile_fail `.stderr` snapshots under `tests/*/fail/` ARE committed
+# so CI succeeds without `--bless`. Re-bless locally whenever diagnostic output
+# changes:
+#   cargo lihaaf --package axum-macros --bless
+# then commit the updated `.stderr` files alongside the diagnostic change.
+#
+# `dylib_crate = "axum"` because fixtures `use axum::extract::...` — the main
+# axum library crate is the dylib that exports the types fixtures link against.
+# `extern_crates = ["axum", "axum-macros"]` — `axum-macros` is loaded as a
+# proc-macro plugin during each fixture's rustc invocation (same pattern as
+# djogi's `djogi`/`djogi-macros` split). `extern_crates[0]` MUST equal
+# `dylib_crate` per spec §3.2.
+# `dev_deps = ["axum-extra", "serde"]` — fixtures in from_request/pass/ and
+# typed_path/pass/ import axum_extra:: and serde:: items directly.
+# `compile_fail_marker = "fail"` — upstream fixtures live in `fail/` and
+# `pass/` directories rather than `compile_fail/` and `compile_pass/`. The
+# marker checks whether the directory path component *contains* the string;
+# setting it to "fail" causes `tests/*/fail/` dirs to classify as compile_fail
+# and `tests/*/pass/` dirs to classify as compile_pass (they don't contain
+# "fail"). Named suites inherit this override per spec §3.6 inheritance rules.
+[package.metadata.lihaaf]
+dylib_crate          = "axum"
+extern_crates        = ["axum", "axum-macros"]
+features             = []
+dev_deps             = ["axum-extra", "serde"]
+edition              = "2021"
+compile_fail_marker  = "fail"
+
+# Default suite fixture_dirs is empty — all fixtures live in named suites.
+# Each named suite covers one fixture group, preserving the per-group layout
+# that upstream maintains for at-a-glance debuggability.
+fixture_dirs = []
+
+[[package.metadata.lihaaf.suite]]
+name         = "debug_handler"
+fixture_dirs = ["tests/debug_handler/fail", "tests/debug_handler/pass"]
+
+[[package.metadata.lihaaf.suite]]
+name         = "debug_middleware"
+fixture_dirs = ["tests/debug_middleware/fail", "tests/debug_middleware/pass"]
+
+[[package.metadata.lihaaf.suite]]
+name         = "from_ref"
+fixture_dirs = ["tests/from_ref/fail", "tests/from_ref/pass"]
+
+[[package.metadata.lihaaf.suite]]
+name         = "from_request"
+fixture_dirs = ["tests/from_request/fail", "tests/from_request/pass"]
+
+[[package.metadata.lihaaf.suite]]
+name         = "typed_path"
+fixture_dirs = ["tests/typed_path/fail", "tests/typed_path/pass"]
