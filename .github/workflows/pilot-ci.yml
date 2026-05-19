@@ -1,16 +1,62 @@
-name: benchmark (trybuild vs lihaaf)
+name: pilot-ci (trybuild vs lihaaf)
 on:
-  workflow_dispatch:
   push:
     branches: [lihaaf-converted]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'benchmark_only or bless_and_benchmark'
+        type: choice
+        options:
+          - benchmark_only
+          - bless_and_benchmark
+        default: benchmark_only
+
+permissions:
+  contents: write
 
 jobs:
-  bench:
+  bless:
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      inputs.mode == 'bless_and_benchmark'
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout lihaaf-converted
+        uses: actions/checkout@v6
+        with:
+          ref: lihaaf-converted
+          persist-credentials: true
+
+      - name: install nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: install lihaaf
+        run: cargo install lihaaf --version 0.1.0-beta.9 --locked
+
+      - name: bless lihaaf snapshots
+        run: cargo lihaaf --bless --manifest-path axum-macros/Cargo.toml
+
+      - name: commit regenerated snapshots if any
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "no snapshot changes to commit"
+          else
+            git commit -m "chore: re-bless lihaaf snapshots against lihaaf 0.1.0-beta.9 output"
+            git push origin lihaaf-converted
+          fi
+
+  benchmark:
+    needs: [bless]
+    if: always() && (needs.bless.result == 'success' || needs.bless.result == 'skipped')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        branch: [master, lihaaf-converted]
+        branch: [main, lihaaf-converted]
     steps:
       - name: checkout ${{ matrix.branch }}
         uses: actions/checkout@v6
@@ -28,14 +74,10 @@ jobs:
         id: bench
         run: |
           set -euo pipefail
-          if [ "${{ matrix.branch }}" = "master" ]; then
-            # master: run the embedded #[rustversion::nightly] #[test] fn ui()
-            # functions in axum-macros/src/{debug_handler,from_ref,from_request,
-            # typed_path}.rs that call trybuild via run_ui_tests().
+          if [ "${{ matrix.branch }}" = "main" ]; then
             CMD="cargo test --package axum-macros"
           else
-            # lihaaf-converted: workspace-member entry via --package (beta.9 #53)
-            CMD="cargo lihaaf --package axum-macros"
+            CMD="cargo lihaaf --manifest-path axum-macros/Cargo.toml"
           fi
           START=$(date +%s%N)
           /usr/bin/time -o time.txt -v $CMD
