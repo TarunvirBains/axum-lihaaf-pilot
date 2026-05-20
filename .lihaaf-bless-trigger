@@ -32,3 +32,7 @@
 #              unresolved despite default-suite dev_deps = ["axum-extra",
 #              "serde"]. Explicit per-suite dev_deps to match the project's
 #              explicit-config model.
+# 2026-05-19 — re-trigger bless after trim: debug_middleware and from_ref
+#              don't use serde or axum-extra (per `grep ^use` audit); only
+#              from_request + typed_path need dev_deps. Bloat-free per
+#              user direction.

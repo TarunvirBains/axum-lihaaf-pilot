@@ -103,24 +103,28 @@ fixture_dirs = ["tests/debug_handler/fail", "tests/debug_handler/pass"]
 # fail to resolve under round-5 (suites omitted dev_deps; serde unresolved).
 # Per the project's explicit-config model ([[lihaaf-dev-deps-explicit-keep]]),
 # state dev_deps on each suite that needs it.
+# debug_middleware/pass uses only `axum` (verified by `grep ^use` over the
+# suite's fixtures), so no dev_deps needed — `axum` comes from extern_crates.
 [[package.metadata.lihaaf.suite]]
 name         = "debug_middleware"
 features     = ["macros"]
-dev_deps     = ["axum-extra", "serde"]
 fixture_dirs = ["tests/debug_middleware/fail", "tests/debug_middleware/pass"]
 
+# from_ref/pass uses only `axum` + `axum_macros`, both via extern_crates.
 [[package.metadata.lihaaf.suite]]
 name         = "from_ref"
 features     = ["macros"]
-dev_deps     = ["axum-extra", "serde"]
 fixture_dirs = ["tests/from_ref/fail", "tests/from_ref/pass"]
 
+# from_request/pass adds `axum_extra` and `serde` (e.g., container.rs uses
+# `use serde::Deserialize`), so explicit dev_deps required.
 [[package.metadata.lihaaf.suite]]
 name         = "from_request"
 features     = ["macros"]
 dev_deps     = ["axum-extra", "serde"]
 fixture_dirs = ["tests/from_request/fail", "tests/from_request/pass"]
 
+# typed_path/pass also uses `axum_extra` (typed-routing traits) and `serde`.
 [[package.metadata.lihaaf.suite]]
 name         = "typed_path"
 features     = ["macros"]
