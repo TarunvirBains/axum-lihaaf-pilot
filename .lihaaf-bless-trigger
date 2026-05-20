@@ -11,3 +11,7 @@
 #              violating spec §3.6 default-suite non-empty rule. Promoted
 #              debug_handler group to default; other 4 groups stay as named
 #              suites.
+# 2026-05-19 — re-trigger bless after fix: features = []. axum-macros is
+#              gated behind axum's `macros` feature; without
+#              features = ["macros"] in lihaaf metadata, the dylib build
+#              doesn't pull axum-macros into deps_dir → fixtures' uses fail.

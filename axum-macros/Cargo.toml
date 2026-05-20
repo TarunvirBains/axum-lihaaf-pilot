@@ -69,7 +69,15 @@ workspace = true
 [package.metadata.lihaaf]
 dylib_crate          = "axum"
 extern_crates        = ["axum", "axum-macros"]
-features             = []
+# `features = ["macros"]` is REQUIRED: axum-macros is NOT a regular dep of
+# axum on its own — it's only pulled in transitively when axum's `macros`
+# feature is enabled (axum's Cargo.toml: `macros = ["dep:axum-macros"]`).
+# Without this, `cargo rustc -p axum --crate-type=dylib` won't compile
+# axum-macros into the deps_dir, and fixtures' `use axum_macros::*;`
+# imports fail with E0432 (unresolved import). The same applies to any
+# pilot where the proc-macro crate is gated behind a consumer-crate
+# feature flag.
+features             = ["macros"]
 dev_deps             = ["axum-extra", "serde"]
 edition              = "2021"
 compile_fail_marker  = "fail"
