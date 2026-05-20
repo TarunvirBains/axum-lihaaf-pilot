@@ -44,7 +44,7 @@ workspace = true
 
 # Lihaaf is the sole compile-fixture gate for axum-macros.
 #
-# CI installs lihaaf via `cargo install lihaaf --version 0.1.0-beta.9 --locked`
+# CI installs lihaaf via `cargo install lihaaf --version 0.1.0-beta.10 --locked`
 # and runs `cargo lihaaf --package axum-macros` (workspace-member entry, #53).
 # The 45 compile_fail `.stderr` snapshots under `tests/*/fail/` ARE committed
 # so CI succeeds without `--bless`. Re-bless locally whenever diagnostic output
