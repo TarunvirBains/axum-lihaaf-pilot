@@ -27,3 +27,8 @@
 #              `pub use axum_macros::{debug_handler, debug_middleware}` is
 #              gated on the macros feature, so every named suite must
 #              explicitly opt in.
+# 2026-05-19 — re-trigger bless after fix: per-suite dev_deps. Round 5 left
+#              16 fails in from_request + 8 in typed_path on `use serde::*`
+#              unresolved despite default-suite dev_deps = ["axum-extra",
+#              "serde"]. Explicit per-suite dev_deps to match the project's
+#              explicit-config model.

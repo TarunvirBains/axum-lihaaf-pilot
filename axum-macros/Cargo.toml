@@ -96,22 +96,33 @@ fixture_dirs = ["tests/debug_handler/fail", "tests/debug_handler/pass"]
 # axum's `pub use axum_macros::{debug_handler, debug_middleware}` re-export
 # (gated on `#[cfg(feature = "macros")]` in axum/src/lib.rs), each suite must
 # explicitly opt back in to the macros feature.
+#
+# `dev_deps` is also stated explicitly per-suite. The spec §3.6 inheritance rule
+# says dev_deps inherits from default, but in practice fixtures in
+# tests/from_request/pass/ and tests/typed_path/pass/ saw `use serde::Deserialize`
+# fail to resolve under round-5 (suites omitted dev_deps; serde unresolved).
+# Per the project's explicit-config model ([[lihaaf-dev-deps-explicit-keep]]),
+# state dev_deps on each suite that needs it.
 [[package.metadata.lihaaf.suite]]
 name         = "debug_middleware"
 features     = ["macros"]
+dev_deps     = ["axum-extra", "serde"]
 fixture_dirs = ["tests/debug_middleware/fail", "tests/debug_middleware/pass"]
 
 [[package.metadata.lihaaf.suite]]
 name         = "from_ref"
 features     = ["macros"]
+dev_deps     = ["axum-extra", "serde"]
 fixture_dirs = ["tests/from_ref/fail", "tests/from_ref/pass"]
 
 [[package.metadata.lihaaf.suite]]
 name         = "from_request"
 features     = ["macros"]
+dev_deps     = ["axum-extra", "serde"]
 fixture_dirs = ["tests/from_request/fail", "tests/from_request/pass"]
 
 [[package.metadata.lihaaf.suite]]
 name         = "typed_path"
 features     = ["macros"]
+dev_deps     = ["axum-extra", "serde"]
 fixture_dirs = ["tests/typed_path/fail", "tests/typed_path/pass"]
