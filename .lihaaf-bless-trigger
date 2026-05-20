@@ -7,3 +7,7 @@
 #
 # 2026-05-19 — initial sentinel; bumped install pin to lihaaf 0.1.0-beta.10
 #              to exercise #45 framework on this pilot.
+# 2026-05-19 — re-trigger bless after fix: top-level fixture_dirs was [],
+#              violating spec §3.6 default-suite non-empty rule. Promoted
+#              debug_handler group to default; other 4 groups stay as named
+#              suites.

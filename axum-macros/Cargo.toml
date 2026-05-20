@@ -74,13 +74,12 @@ dev_deps             = ["axum-extra", "serde"]
 edition              = "2021"
 compile_fail_marker  = "fail"
 
-# Default suite fixture_dirs is empty — all fixtures live in named suites.
-# Each named suite covers one fixture group, preserving the per-group layout
-# that upstream maintains for at-a-glance debuggability.
-fixture_dirs = []
-
-[[package.metadata.lihaaf.suite]]
-name         = "debug_handler"
+# Default suite covers the debug_handler group. lihaaf spec §3.6 requires
+# the implicit default suite to have a non-empty `fixture_dirs` that resolves
+# to at least one existing directory, AND fixture_dirs across all suites must
+# be DISJOINT. So one group must be the default; the remaining four groups
+# become named suites. debug_handler chosen as default because it's the
+# largest group (22 of the 45 fail fixtures).
 fixture_dirs = ["tests/debug_handler/fail", "tests/debug_handler/pass"]
 
 [[package.metadata.lihaaf.suite]]
