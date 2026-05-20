@@ -90,18 +90,28 @@ compile_fail_marker  = "fail"
 # largest group (22 of the 45 fail fixtures).
 fixture_dirs = ["tests/debug_handler/fail", "tests/debug_handler/pass"]
 
+# Per lihaaf spec §3.6 "features does NOT inherit" — a named suite that omits
+# `features` gets `[]`, not the default suite's `["macros"]`. Each named suite
+# builds its own dylib with its own feature set. For every suite below to see
+# axum's `pub use axum_macros::{debug_handler, debug_middleware}` re-export
+# (gated on `#[cfg(feature = "macros")]` in axum/src/lib.rs), each suite must
+# explicitly opt back in to the macros feature.
 [[package.metadata.lihaaf.suite]]
 name         = "debug_middleware"
+features     = ["macros"]
 fixture_dirs = ["tests/debug_middleware/fail", "tests/debug_middleware/pass"]
 
 [[package.metadata.lihaaf.suite]]
 name         = "from_ref"
+features     = ["macros"]
 fixture_dirs = ["tests/from_ref/fail", "tests/from_ref/pass"]
 
 [[package.metadata.lihaaf.suite]]
 name         = "from_request"
+features     = ["macros"]
 fixture_dirs = ["tests/from_request/fail", "tests/from_request/pass"]
 
 [[package.metadata.lihaaf.suite]]
 name         = "typed_path"
+features     = ["macros"]
 fixture_dirs = ["tests/typed_path/fail", "tests/typed_path/pass"]

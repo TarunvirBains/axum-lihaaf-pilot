@@ -21,3 +21,9 @@
 #              this flag the macro is a release-mode no-op and every
 #              compile_fail fixture compiles successfully (EXPECTED_FAIL_
 #              BUT_PASSED).
+# 2026-05-19 — re-trigger bless after fix: per-suite features = ["macros"].
+#              lihaaf spec §3.6 says features does NOT inherit from default;
+#              named suites that omit it get []. The axum re-export
+#              `pub use axum_macros::{debug_handler, debug_middleware}` is
+#              gated on the macros feature, so every named suite must
+#              explicitly opt in.
