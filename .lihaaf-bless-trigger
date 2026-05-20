@@ -15,3 +15,9 @@
 #              gated behind axum's `macros` feature; without
 #              features = ["macros"] in lihaaf metadata, the dylib build
 #              doesn't pull axum-macros into deps_dir → fixtures' uses fail.
+# 2026-05-19 — re-trigger bless after fix: RUSTFLAGS=-C debug-assertions=on.
+#              axum-macros' #[debug_handler] gates its error checks on
+#              cfg(debug_assertions); lihaaf hard-codes --release; without
+#              this flag the macro is a release-mode no-op and every
+#              compile_fail fixture compiles successfully (EXPECTED_FAIL_
+#              BUT_PASSED).

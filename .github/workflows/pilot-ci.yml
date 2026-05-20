@@ -59,6 +59,18 @@ jobs:
         run: cargo install lihaaf --version 0.1.0-beta.10 --locked
 
       - name: bless lihaaf snapshots
+        env:
+          # `#[axum_macros::debug_handler]` gates its error-checking code on
+          # `cfg(debug_assertions)` (axum-macros/src/lib.rs:577,580,633,636) —
+          # in release mode the macro is a no-op for production-build speed.
+          # lihaaf hard-codes `--release` for the dylib build (lihaaf
+          # src/dylib.rs:98), so axum-macros' checks would be compiled out
+          # and every compile_fail fixture would EXPECTED_FAIL_BUT_PASSED.
+          # Forcing `-C debug-assertions=on` via RUSTFLAGS makes the cfg
+          # predicate true regardless of the optimization profile. lihaaf
+          # preserves the caller's RUSTFLAGS (dylib.rs:114-120) and only
+          # appends `-C prefer-dynamic`, so this propagates correctly.
+          RUSTFLAGS: -C debug-assertions=on
         run: cargo lihaaf --bless --manifest-path axum-macros/Cargo.toml
 
       - name: commit regenerated snapshots if any
@@ -96,6 +108,13 @@ jobs:
 
       - name: time fixture suite
         id: bench
+        env:
+          # Same rationale as the bless job: keep debug_assertions on so
+          # axum-macros' `#[debug_handler]` checks fire under lihaaf's
+          # `--release` dylib build. Harmless for the trybuild leg (main)
+          # since `cargo test` builds in debug profile by default — but
+          # setting it for both legs keeps the comparison apples-to-apples.
+          RUSTFLAGS: -C debug-assertions=on
         run: |
           set -euo pipefail
           if [ "${{ matrix.branch }}" = "main" ]; then
