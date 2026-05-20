@@ -1,0 +1,9 @@
+# pilot-ci.yml bless trigger sentinel
+#
+# Modifying this file in a push to lihaaf-converted causes the bless job
+# to run BEFORE benchmark (see .github/workflows/pilot-ci.yml detect-mode).
+# This lets us regenerate snapshots after a lihaaf version bump without
+# polluting the fork's main branch with a workflow_dispatch trigger.
+#
+# 2026-05-19 — initial sentinel; bumped install pin to lihaaf 0.1.0-beta.10
+#              to exercise #45 framework on this pilot.
